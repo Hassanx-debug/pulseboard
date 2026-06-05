@@ -1,6 +1,6 @@
-import useSWR from "swr";
+﻿import useSWR from "swr";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = "https://hassan5858-pulseboard-backend.hf.space";
 
 const fetcher = (url: string) =>
   fetch(url).then((res) => {
@@ -102,15 +102,15 @@ export const SENTIMENT_COLORS = {
 } as const;
 
 export const CATEGORY_ICONS: Record<string, string> = {
-  ai: "🤖", dev_tools: "🔧", security: "🔒",
-  web: "🌐", infra: "⚙️", language: "📝",
-  hardware: "💾", business: "📈", other: "◈",
+  ai: "ðŸ¤–", dev_tools: "ðŸ”§", security: "ðŸ”’",
+  web: "ðŸŒ", infra: "âš™ï¸", language: "ðŸ“",
+  hardware: "ðŸ’¾", business: "ðŸ“ˆ", other: "â—ˆ",
 };
 
 export function getMomentum(m: number) {
-  if (m > 5)  return { label: "surging",  symbol: "↑↑", color: "#00FF88" };
-  if (m > 1)  return { label: "rising",   symbol: "↑",  color: "#00CC66" };
-  if (m < -5) return { label: "cooling",  symbol: "↓↓", color: "#FF4444" };
-  if (m < -1) return { label: "fading",   symbol: "↓",  color: "#CC3333" };
-  return        { label: "steady",  symbol: "→",  color: "#666666" };
+  if (m > 5)  return { label: "surging",  symbol: "â†‘â†‘", color: "#00FF88" };
+  if (m > 1)  return { label: "rising",   symbol: "â†‘",  color: "#00CC66" };
+  if (m < -5) return { label: "cooling",  symbol: "â†“â†“", color: "#FF4444" };
+  if (m < -1) return { label: "fading",   symbol: "â†“",  color: "#CC3333" };
+  return        { label: "steady",  symbol: "â†’",  color: "#666666" };
 }
