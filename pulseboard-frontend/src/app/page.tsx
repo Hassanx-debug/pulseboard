@@ -107,11 +107,11 @@ export default function Dashboard() {
     <main className="min-h-screen bg-[#080808] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-950/20 via-[#080808] to-[#040404] text-white">
       <div className="sticky top-0 z-50 backdrop-blur-md bg-[#080808]/80 border-b border-white/5 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`w-2 h-2 rounded-full transition-all duration-500 ${isConnected ? "bg-[#00FF88] shadow-[0_0_8px_#00FF88] animate-pulse" : "bg-[#FF4444] shadow-[0_0_8px_#FF4444]"}`} />
+          <div className={`w-2 h-2 rounded-full transition-all duration-500 ${isConnected ? "bg-[#00FF88] shadow-[0_0_8px_#00FF88] animate-pulse" : "bg-[#FF8C00] shadow-[0_0_6px_#FF8C00]"}`} />
           <span className="font-mono text-sm text-white/80 tracking-widest">PULSE_BOARD</span>
-          <span className="font-mono text-[9px] text-white/45 border border-white/10 px-1.5 py-0.5 rounded uppercase tracking-wider">{isConnected ? "live" : "offline"}</span>
+          <span className={`font-mono text-[9px] border border-white/10 px-1.5 py-0.5 rounded uppercase tracking-wider ${isConnected ? "text-[#00FF88]/70" : "text-white/35"}`}>{isConnected ? "live" : "polling"}</span>
           <span className="font-mono text-[9px] text-white/20">v3.0</span>
-          <span className="font-mono text-[9px] text-white/40 ml-2">👥 {userCount}</span>
+          {userCount > 0 && <span className="font-mono text-[9px] text-white/40 ml-2">👥 {userCount}</span>}
         </div>
         <div className="flex items-center gap-4">
           {isSyncing && (
