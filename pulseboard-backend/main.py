@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,19 +30,27 @@ app = FastAPI(title="PulseBoard API", version="2.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://pulseboard-psi-dusky.vercel.app", "https://*.vercel.app"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://localhost:3000",
+        "https://pulseboard-teal-ten.vercel.app",
+        "https://pulseboard-psi-dusky.vercel.app",
+        "https://*.vercel.app",
+    ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
 from routers.ingest import router as ingest_router
 from routers.trends import router as trends_router
 from routers.github import router as github_router
+from routers.websocket import router as websocket_router
 
 app.include_router(ingest_router)
 app.include_router(trends_router)
 app.include_router(github_router)
+app.include_router(websocket_router)
 
 @app.get("/health")
 async def health():

@@ -284,6 +284,17 @@ async def run_ingest() -> IngestResult:
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }))
 
+    # Broadcast websocket update to connected clients
+    try:
+        from routers.websocket import manager as ws_manager
+        await ws_manager.broadcast({
+            "type": "trends_updated",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "topics_count": len(topic_rows)
+        })
+    except Exception as ws_err:
+        print(f"[ingest] WebSocket broadcast error: {ws_err}")
+
     return result
 
 @router.post("/", summary="Trigger ingest in background")
