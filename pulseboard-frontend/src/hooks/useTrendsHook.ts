@@ -1,4 +1,4 @@
-﻿import useSWR from "swr";
+import useSWR from "swr";
 
 const API_URL = "https://hassan5858-pulseboard-backend.hf.space";
 
@@ -53,7 +53,7 @@ export interface DashboardStats {
 
 export function useTrends(limit = 20) {
   const { data, error, isLoading, mutate } = useSWR(
-    `${API_URL}/api/trends?limit=${limit}`,
+    `${API_URL}/api/trends/?limit=${limit}`,
     fetcher,
     { refreshInterval: 60_000, dedupingInterval: 30_000 }
   );

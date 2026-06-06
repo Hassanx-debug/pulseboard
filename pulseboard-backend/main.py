@@ -1,6 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from routers import ingest, trends
 from scheduler import scheduler, setup_scheduler
@@ -27,6 +27,14 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown(wait=False)
 
 app = FastAPI(title="PulseBoard API", version="2.0.0", lifespan=lifespan)
+
+@app.middleware("http")
+async def update_scheme_middleware(request: Request, call_next):
+    proto = request.headers.get("x-forwarded-proto")
+    if proto:
+        request.scope["scheme"] = proto
+    response = await call_next(request)
+    return response
 
 app.add_middleware(
     CORSMiddleware,
