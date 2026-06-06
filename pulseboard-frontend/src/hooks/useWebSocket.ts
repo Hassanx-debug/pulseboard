@@ -7,6 +7,7 @@ const WS_URL = API_URL.replace(/^http/, "ws") + "/ws";
 export function useWebSocket() {
   const [isConnected, setIsConnected] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectDelayRef = useRef(1000); // Start reconnect delay at 1s
   const pingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -59,6 +60,8 @@ export function useWebSocket() {
                 if (active) setIsSyncing(false);
               }, 1200);
             });
+          } else if (data.type === "user_count") {
+            setUserCount(data.count);
           }
         } catch (err) {
           console.error("Failed to parse WebSocket message:", err);
@@ -101,5 +104,5 @@ export function useWebSocket() {
     };
   }, []);
 
-  return { isConnected, isSyncing };
+  return { isConnected, isSyncing, userCount };
 }

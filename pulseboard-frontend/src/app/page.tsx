@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { useTrends, useFeed, useStats, SOURCE_COLORS, SENTIMENT_COLORS, CATEGORY_ICONS, getMomentum, type TrendingTopic, type SnapshotItem } from "@/hooks/useTrendsHook";
+import TrendChart from "@/components/TrendChart";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
 function SourceBadge({ source }: { source: string }) {
@@ -27,20 +28,20 @@ function TopicCard({ topic, index, maxHeat }: { topic: TrendingTopic; index: num
   const momentum = getMomentum(topic.momentum);
   const icon = CATEGORY_ICONS[topic.category] ?? "◆";
   return (
-    "    <motion.div layoutId={topic.id} layout initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.035 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className=\"border border-white/5 hover:border-white/10 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer overflow-hidden\" onClick={() => setExpanded(e => !e)}>
+    <motion.div layoutId={topic.id} layout initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.035 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="border border-white/5 hover:border-white/10 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer overflow-hidden" onClick={() => setExpanded(e => !e)}>
       <div className="flex items-center gap-3 px-4 py-3">
         <span className="text-white/20 font-mono text-[10px] w-4 shrink-0 text-right">{String(index + 1).padStart(2, "0")}</span>
         <span className="text-sm shrink-0">{icon}</span>
         <span className="font-mono text-sm text-white/90 flex-1 truncate tracking-wide">#{topic.topic}</span>
         <SentimentBadge sentiment={topic.sentiment} />
         <div className="flex gap-1 shrink-0">{Object.keys(topic.source_breakdown).map(src => <SourceBadge key={src} source={src} />)}</div>
-        <span className="text-white/30 font-mono text-[10px] shrink-0">{topic.mention_count}Ã—</span>
+        <span className="text-white/30 font-mono text-[10px] shrink-0">{topic.mention_count}×</span>
         <span className="font-mono text-[10px] shrink-0" style={{ color: momentum.color }}>{momentum.symbol} {momentum.label}</span>
-        <span className="font-mono text-[10px] text-white/50 shrink-0 w-14 text-right">âš¡{topic.avg_heat.toFixed(1)}</span>
-        <span className="text-white/20 text-[10px] shrink-0 transition-transform duration-200" style={{ transform: expanded ? "rotate(180deg)" : "none" }}>â–¾</span>
+        <span className="font-mono text-[10px] text-white/50 shrink-0 w-14 text-right">⚡{topic.avg_heat.toFixed(1)}</span>
+        <span className="text-white/20 text-[10px] shrink-0 transition-transform duration-200" style={{ transform: expanded ? "rotate(180deg)" : "none" }}>▼</span>
       </div>
       <div className="px-4 pb-2"><HeatBar heat={topic.avg_heat} max={maxHeat} /></div>
-      {topic.ai_insight && <div className="px-4 pb-2"><p className="text-[10px] text-white/40 font-mono leading-relaxed"><span className="text-white/20">AI â€º </span>{topic.ai_insight}</p></div>}
+      {topic.ai_insight && <div className="px-4 pb-2"><p className="text-[10px] text-white/40 font-mono leading-relaxed"><span className="text-white/20">AI › </span>{topic.ai_insight}</p></div>}
       <AnimatePresence>
         {expanded && topic.top_urls?.length > 0 && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="border-t border-white/5 overflow-hidden">
@@ -49,7 +50,7 @@ function TopicCard({ topic, index, maxHeat }: { topic: TrendingTopic; index: num
                 <div key={i} className="flex items-start gap-2">
                   <SourceBadge source={item.source} />
                   <a href={item.url ?? "#"} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[10px] text-white/40 hover:text-white/80 transition-colors flex-1 line-clamp-2">{item.title}</a>
-                  <span className="text-[9px] font-mono text-white/20 shrink-0">âš¡{item.heat.toFixed(1)}</span>
+                  <span className="text-[9px] font-mono text-white/20 shrink-0">⚡{item.heat.toFixed(1)}</span>
                 </div>
               ))}
             </div>
@@ -67,11 +68,11 @@ function FeedItem({ item }: { item: SnapshotItem }) {
       <div className="flex-1 min-w-0">
         <a href={item.url ?? "#"} target="_blank" rel="noopener noreferrer" className="text-[11px] text-white/60 hover:text-white/90 transition-colors line-clamp-2 leading-relaxed">{item.title}</a>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <span className="text-[9px] text-white/25 font-mono">â†‘{item.score} Â· ðŸ’¬{item.comment_count}</span>
+          <span className="text-[9px] text-white/25 font-mono">↑{item.score} · 💬{item.comment_count}</span>
           {(item.tags ?? []).slice(0, 3).map(tag => <span key={tag} className="text-[9px] text-white/20 font-mono">#{tag}</span>)}
         </div>
       </div>
-      <span className="text-[9px] font-mono text-white/25 shrink-0">âš¡{item.heat_score.toFixed(1)}</span>
+      <span className="text-[9px] font-mono text-white/25 shrink-0">⚡{item.heat_score.toFixed(1)}</span>
     </div>
   );
 }
@@ -83,7 +84,7 @@ function StatsBar() {
     <div className="flex items-center gap-6 flex-wrap text-[10px] font-mono">
       <span className="text-white/30">TOTAL <span className="text-white/70">{stats.total_24h.toLocaleString()}</span>/24H</span>
       <span className="text-white/30">LAST HOUR <span className="text-white/70">{stats.ingested_1h}</span></span>
-      <span className="text-white/30">PEAK <span style={{ color: "#FF4500" }}>âš¡{stats.peak_heat_1h?.toFixed(1)}</span></span>
+      <span className="text-white/30">PEAK <span style={{ color: "#FF4500" }}>⚡{stats.peak_heat_1h?.toFixed(1)}</span></span>
       {Object.entries(stats.source_counts_24h ?? {}).map(([src, count]) => (
         <span key={src} className="text-white/30"><span style={{ color: SOURCE_COLORS[src as keyof typeof SOURCE_COLORS] ?? "#888" }}>{src.toUpperCase()}</span> <span className="text-white/70">{count}</span></span>
       ))}
@@ -92,13 +93,15 @@ function StatsBar() {
 }
 
 export default function Dashboard() {
-  const { isConnected, isSyncing } = useWebSocket();
+  const { isConnected, isSyncing, userCount } = useWebSocket();
   const { topics, isLoading, error, refresh, generatedAt } = useTrends(25);
   const { items, isLoading: feedLoading } = useFeed(30);
   const [tab, setTab] = useState<"topics" | "feed">("topics");
-  const [syncTime, setSyncTime] = useState("");
-  useEffect(() => { if (generatedAt) setSyncTime(new Date(generatedAt).toLocaleTimeString()); }, [generatedAt]);
-  const maxHeat = Math.max(...topics.map(t => t.avg_heat), 1);
+
+  // userCount is now provided by useWebSocket hook
+
+
+  const syncTime = generatedAt ? new Date(generatedAt).toLocaleTimeString() : "";
   return (
     <main className="min-h-screen bg-[#080808] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-950/20 via-[#080808] to-[#040404] text-white">
       <div className="sticky top-0 z-50 backdrop-blur-md bg-[#080808]/80 border-b border-white/5 px-6 py-3 flex items-center justify-between">
@@ -107,6 +110,7 @@ export default function Dashboard() {
           <span className="font-mono text-sm text-white/80 tracking-widest">PULSE_BOARD</span>
           <span className="font-mono text-[9px] text-white/45 border border-white/10 px-1.5 py-0.5 rounded uppercase tracking-wider">{isConnected ? "live" : "offline"}</span>
           <span className="font-mono text-[9px] text-white/20">v3.0</span>
+          <span className="font-mono text-[9px] text-white/40 ml-2">👥 {userCount}</span>
         </div>
         <div className="flex items-center gap-4">
           {isSyncing && (
@@ -154,6 +158,7 @@ export default function Dashboard() {
                 </button>
               </div>
             )}
+          <TrendChart topics={topics} />
             {!isLoading && !error && topics.length === 0 && (
               <div className="text-center py-12">
                 <p className="font-mono text-xs text-white/30">NO TREND DATA YET</p>
