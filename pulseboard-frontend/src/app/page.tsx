@@ -1,7 +1,7 @@
 ﻿"use client";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTrends, useFeed, useStats, SOURCE_COLORS, SENTIMENT_COLORS, CATEGORY_ICONS, getMomentum, type TrendingTopic, type SnapshotItem } from "@/hooks/useTrends";
+import { useTrends, useFeed, useStats, SOURCE_COLORS, SENTIMENT_COLORS, CATEGORY_ICONS, getMomentum, type TrendingTopic, type SnapshotItem } from "@/hooks/useTrendsHook";
 
 function SourceBadge({ source }: { source: string }) {
   const color = SOURCE_COLORS[source as keyof typeof SOURCE_COLORS] ?? "#888";
@@ -151,4 +151,5 @@ export default function Dashboard() {
     </main>
   );
 }
+
 
