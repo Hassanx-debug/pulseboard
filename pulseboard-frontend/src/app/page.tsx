@@ -1,8 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { useTrends, useFeed, useStats, SOURCE_COLORS, SENTIMENT_COLORS, CATEGORY_ICONS, getMomentum, type TrendingTopic, type SnapshotItem } from "@/hooks/useTrendsHook";
-import TrendChart from "@/components/TrendChart";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
 function SourceBadge({ source }: { source: string }) {
@@ -102,6 +102,7 @@ export default function Dashboard() {
 
 
   const syncTime = generatedAt ? new Date(generatedAt).toLocaleTimeString() : "";
+  const maxHeat = topics.reduce((m, t) => Math.max(m, t.avg_heat), 1);
   return (
     <main className="min-h-screen bg-[#080808] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-950/20 via-[#080808] to-[#040404] text-white">
       <div className="sticky top-0 z-50 backdrop-blur-md bg-[#080808]/80 border-b border-white/5 px-6 py-3 flex items-center justify-between">
@@ -158,7 +159,16 @@ export default function Dashboard() {
                 </button>
               </div>
             )}
-          <TrendChart topics={topics} />
+            {/* Heat distribution mini-chart */}
+            {!isLoading && topics.length > 0 && (
+              <div className="flex items-end gap-0.5 h-8 py-1 mb-3">
+                {topics.slice(0, 25).map((t, i) => {
+                  const pct = Math.min((t.avg_heat / maxHeat) * 100, 100);
+                  const color = t.avg_heat > 100 ? "#FF4500" : t.avg_heat > 50 ? "#FF8C00" : "#00FF88";
+                  return <div key={t.id} title={`#${t.topic}: ${t.avg_heat.toFixed(1)}`} className="flex-1 rounded-sm transition-all" style={{ height: `${Math.max(pct, 8)}%`, backgroundColor: color, opacity: 0.7 }} />;
+                })}
+              </div>
+            )}
             {!isLoading && !error && topics.length === 0 && (
               <div className="text-center py-12">
                 <p className="font-mono text-xs text-white/30">NO TREND DATA YET</p>
