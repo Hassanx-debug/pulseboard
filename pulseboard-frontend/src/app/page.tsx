@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { useTrends, useFeed, useStats, SOURCE_COLORS, SENTIMENT_COLORS, CATEGORY_ICONS, getMomentum, type TrendingTopic, type SnapshotItem } from "@/hooks/useTrendsHook";
+import { useWebSocket } from "@/hooks/useWebSocket";
 
 function SourceBadge({ source }: { source: string }) {
   const color = SOURCE_COLORS[source as keyof typeof SOURCE_COLORS] ?? "#888";
@@ -24,9 +25,9 @@ function HeatBar({ heat, max }: { heat: number; max: number }) {
 function TopicCard({ topic, index, maxHeat }: { topic: TrendingTopic; index: number; maxHeat: number }) {
   const [expanded, setExpanded] = useState(false);
   const momentum = getMomentum(topic.momentum);
-  const icon = CATEGORY_ICONS[topic.category] ?? "â—ˆ";
+  const icon = CATEGORY_ICONS[topic.category] ?? "◆";
   return (
-    <motion.div layout initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.035 }} className="border border-white/5 hover:border-white/10 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-all cursor-pointer overflow-hidden" onClick={() => setExpanded(e => !e)}>
+    "    <motion.div layoutId={topic.id} layout initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.035 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className=\"border border-white/5 hover:border-white/10 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all cursor-pointer overflow-hidden\" onClick={() => setExpanded(e => !e)}>
       <div className="flex items-center gap-3 px-4 py-3">
         <span className="text-white/20 font-mono text-[10px] w-4 shrink-0 text-right">{String(index + 1).padStart(2, "0")}</span>
         <span className="text-sm shrink-0">{icon}</span>
@@ -91,6 +92,7 @@ function StatsBar() {
 }
 
 export default function Dashboard() {
+  const { isConnected, isSyncing } = useWebSocket();
   const { topics, isLoading, error, refresh, generatedAt } = useTrends(25);
   const { items, isLoading: feedLoading } = useFeed(30);
   const [tab, setTab] = useState<"topics" | "feed">("topics");
@@ -98,16 +100,22 @@ export default function Dashboard() {
   useEffect(() => { if (generatedAt) setSyncTime(new Date(generatedAt).toLocaleTimeString()); }, [generatedAt]);
   const maxHeat = Math.max(...topics.map(t => t.avg_heat), 1);
   return (
-    <main className="min-h-screen bg-[#080808] text-white">
-      <div className="border-b border-white/5 px-6 py-3 flex items-center justify-between">
+    <main className="min-h-screen bg-[#080808] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-950/20 via-[#080808] to-[#040404] text-white">
+      <div className="sticky top-0 z-50 backdrop-blur-md bg-[#080808]/80 border-b border-white/5 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+          <div className={`w-2 h-2 rounded-full transition-all duration-500 ${isConnected ? "bg-[#00FF88] shadow-[0_0_8px_#00FF88] animate-pulse" : "bg-[#FF4444] shadow-[0_0_8px_#FF4444]"}`} />
           <span className="font-mono text-sm text-white/80 tracking-widest">PULSE_BOARD</span>
-          <span className="font-mono text-[10px] text-white/20">v3.0</span>
+          <span className="font-mono text-[9px] text-white/45 border border-white/10 px-1.5 py-0.5 rounded uppercase tracking-wider">{isConnected ? "live" : "offline"}</span>
+          <span className="font-mono text-[9px] text-white/20">v3.0</span>
         </div>
         <div className="flex items-center gap-4">
+          {isSyncing && (
+            <span className="font-mono text-[10px] text-[#00FF88] animate-pulse">
+              ● SYNCING...
+            </span>
+          )}
           {syncTime && <span className="font-mono text-[10px] text-white/25">SYNCED {syncTime}</span>}
-          <button onClick={() => refresh()} className="font-mono text-[10px] text-white/30 hover:text-white/70 border border-white/10 hover:border-white/20 px-3 py-1.5 rounded transition-all">â†º REFRESH</button>
+          <button onClick={() => refresh()} className="font-mono text-[10px] text-white/30 hover:text-white/70 border border-white/10 hover:border-white/20 px-3 py-1.5 rounded transition-all">↺ REFRESH</button>
         </div>
       </div>
       <div className="max-w-6xl mx-auto px-6 py-6 space-y-6">
@@ -132,12 +140,30 @@ export default function Dashboard() {
         </div>
         {tab === "topics" && (
           <div className="space-y-2">
-            {isLoading && <div className="flex items-center gap-3 py-12 justify-center"><div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-bounce" /><span className="font-mono text-xs text-white/30">FETCHING TRENDS...</span></div>}
-            {error && <div className="font-mono text-xs text-red-400/70 py-4 px-3 border border-red-400/20 rounded-lg bg-red-400/5">âœ— {error} <button onClick={() => refresh()} className="ml-3 underline text-white/40 hover:text-white/70">retry</button></div>}
-            {!isLoading && !error && topics.length === 0 && <div className="text-center py-12"><p className="font-mono text-xs text-white/30">NO TREND DATA YET</p></div>}
-            <AnimatePresence mode="popLayout">
-              {topics.map((topic, i) => <TopicCard key={topic.id} topic={topic} index={i} maxHeat={maxHeat} />)}
-            </AnimatePresence>
+            {isLoading && (
+              <div className="flex items-center gap-3 py-12 justify-center">
+                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-bounce" />
+                <span className="font-mono text-xs text-white/30">FETCHING TRENDS...</span>
+              </div>
+            )}
+            {error && (
+              <div className="font-mono text-xs text-red-400/70 py-4 px-3 border border-red-400/20 rounded-lg bg-red-400/5">
+                ✖ {error}{' '}
+                <button onClick={() => refresh()} className="ml-3 underline text-white/40 hover:text-white/70">
+                  retry
+                </button>
+              </div>
+            )}
+            {!isLoading && !error && topics.length === 0 && (
+              <div className="text-center py-12">
+                <p className="font-mono text-xs text-white/30">NO TREND DATA YET</p>
+              </div>
+            )}
+            <LayoutGroup>
+              {topics.map((topic, i) => (
+                <TopicCard key={topic.id} topic={topic} index={i} maxHeat={maxHeat} />
+              ))}
+            </LayoutGroup>
           </div>
         )}
         {tab === "feed" && (
