@@ -53,12 +53,10 @@ app.add_middleware(
 from routers.ingest import router as ingest_router
 from routers.trends import router as trends_router
 from routers.github import router as github_router
-from routers.websocket import router as websocket_router
 
 app.include_router(ingest_router)
 app.include_router(trends_router)
 app.include_router(github_router)
-app.include_router(websocket_router)
 
 @app.get("/health")
 async def health():

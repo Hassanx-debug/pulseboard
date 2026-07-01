@@ -3,7 +3,6 @@ import { useState } from "react";
 
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { useTrends, useFeed, useStats, SOURCE_COLORS, SENTIMENT_COLORS, CATEGORY_ICONS, getMomentum, type TrendingTopic, type SnapshotItem } from "@/hooks/useTrendsHook";
-import { useWebSocket } from "@/hooks/useWebSocket";
 
 function SourceBadge({ source }: { source: string }) {
   const color = SOURCE_COLORS[source as keyof typeof SOURCE_COLORS] ?? "#888";
@@ -19,7 +18,7 @@ function SentimentBadge({ sentiment }: { sentiment: string }) {
 
 function HeatBar({ heat, max }: { heat: number; max: number }) {
   const pct = Math.min((heat / Math.max(max, 1)) * 100, 100);
-  const color = heat > 100 ? "#FF4500" : heat > 50 ? "#FF8C00" : "#00FF88";
+  const color = heat > 100 ? "#FF9500" : heat > 50 ? "#FF9500" : "#00FFD1";
   return <div className="h-0.5 w-full bg-white/5 rounded-full overflow-hidden"><motion.div className="h-full rounded-full" style={{ backgroundColor: color }} initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} /></div>;
 }
 
@@ -84,7 +83,7 @@ function StatsBar() {
     <div className="flex items-center gap-6 flex-wrap text-[10px] font-mono">
       <span className="text-white/30">TOTAL <span className="text-white/70">{stats.total_24h.toLocaleString()}</span>/24H</span>
       <span className="text-white/30">LAST HOUR <span className="text-white/70">{stats.ingested_1h}</span></span>
-      <span className="text-white/30">PEAK <span style={{ color: "#FF4500" }}>⚡{stats.peak_heat_1h?.toFixed(1)}</span></span>
+          <span className="text-white/30">PEAK <span style={{ color: "#FF9500" }}>⚡{stats.peak_heat_1h?.toFixed(1)}</span></span>
       {Object.entries(stats.source_counts_24h ?? {}).map(([src, count]) => (
         <span key={src} className="text-white/30"><span style={{ color: SOURCE_COLORS[src as keyof typeof SOURCE_COLORS] ?? "#888" }}>{src.toUpperCase()}</span> <span className="text-white/70">{count}</span></span>
       ))}
@@ -93,32 +92,23 @@ function StatsBar() {
 }
 
 export default function Dashboard() {
-  const { isConnected, isSyncing, userCount } = useWebSocket();
   const { topics, isLoading, error, refresh, generatedAt } = useTrends(25);
   const { items, isLoading: feedLoading } = useFeed(30);
   const [tab, setTab] = useState<"topics" | "feed">("topics");
-
-  // userCount is now provided by useWebSocket hook
 
 
   const syncTime = generatedAt ? new Date(generatedAt).toLocaleTimeString() : "";
   const maxHeat = topics.reduce((m, t) => Math.max(m, t.avg_heat), 1);
   return (
-    <main className="min-h-screen bg-[#080808] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-950/20 via-[#080808] to-[#040404] text-white">
-      <div className="sticky top-0 z-50 backdrop-blur-md bg-[#080808]/80 border-b border-white/5 px-6 py-3 flex items-center justify-between">
+    <main className="min-h-screen bg-[#0a0a0a] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-950/20 via-[#0a0a0a] to-[#050505] text-white">
+      <div className="sticky top-0 z-50 backdrop-blur-md bg-[#0a0a0a]/80 border-b border-white/5 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`w-2 h-2 rounded-full transition-all duration-500 ${isConnected ? "bg-[#00FF88] shadow-[0_0_8px_#00FF88] animate-pulse" : "bg-[#FF8C00] shadow-[0_0_6px_#FF8C00]"}`} />
+          <div className="w-2 h-2 rounded-full bg-[#00FFD1] shadow-[0_0_8px_#00FFD1] animate-pulse" />
           <span className="font-mono text-sm text-white/80 tracking-widest">PULSE_BOARD</span>
-          <span className={`font-mono text-[9px] border border-white/10 px-1.5 py-0.5 rounded uppercase tracking-wider ${isConnected ? "text-[#00FF88]/70" : "text-white/35"}`}>{isConnected ? "live" : "polling"}</span>
+          <span className="font-mono text-[9px] border border-white/10 px-1.5 py-0.5 rounded uppercase tracking-wider text-[#00FFD1]/70">live</span>
           <span className="font-mono text-[9px] text-white/20">v3.0</span>
-          {userCount > 0 && <span className="font-mono text-[9px] text-white/40 ml-2">👥 {userCount}</span>}
         </div>
         <div className="flex items-center gap-4">
-          {isSyncing && (
-            <span className="font-mono text-[10px] text-[#00FF88] animate-pulse">
-              ● SYNCING...
-            </span>
-          )}
           {syncTime && <span className="font-mono text-[10px] text-white/25">SYNCED {syncTime}</span>}
           <button onClick={() => refresh()} className="font-mono text-[10px] text-white/30 hover:text-white/70 border border-white/10 hover:border-white/20 px-3 py-1.5 rounded transition-all">↺ REFRESH</button>
         </div>
@@ -164,7 +154,7 @@ export default function Dashboard() {
               <div className="flex items-end gap-0.5 h-8 py-1 mb-3">
                 {topics.slice(0, 25).map((t, i) => {
                   const pct = Math.min((t.avg_heat / maxHeat) * 100, 100);
-                  const color = t.avg_heat > 100 ? "#FF4500" : t.avg_heat > 50 ? "#FF8C00" : "#00FF88";
+                  const color = t.avg_heat > 100 ? "#FF9500" : t.avg_heat > 50 ? "#FF9500" : "#00FFD1";
                   return <div key={t.id} title={`#${t.topic}: ${t.avg_heat.toFixed(1)}`} className="flex-1 rounded-sm transition-all" style={{ height: `${Math.max(pct, 8)}%`, backgroundColor: color, opacity: 0.7 }} />;
                 })}
               </div>
